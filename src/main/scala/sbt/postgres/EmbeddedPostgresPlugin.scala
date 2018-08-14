@@ -1,4 +1,4 @@
-package io.nhanzlikova.sbt.postgres
+package sbt.postgres
 
 import ru.yandex.qatools.embed.postgresql.distribution.Version
 import ru.yandex.qatools.embed.postgresql.distribution.Version.Main.PRODUCTION

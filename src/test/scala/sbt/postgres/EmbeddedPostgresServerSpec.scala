@@ -1,4 +1,4 @@
-package io.nhanzlikova.sbt.postgres
+package sbt.postgres
 
 import java.sql.Connection
 import java.util.Properties

@@ -7,9 +7,8 @@ Installation
 ------------
 Add the following to your `project/plugins.sbt` file:
 ```
-resolvers += Resolver.bintrayRepo("geekity", "sbt-plugins")
-
-addSbtPlugin("io.nhanzlikova.sbt" % "sbt-embedded-postgres" % "1.2.0")
+resolvers += Resolver.bintrayRepo("gregor-i", "maven")
+addSbtPlugin("com.github.gregor-i" % "sbt-embedded-postgres" % "1.3.0")
 ```
 
 Configuration

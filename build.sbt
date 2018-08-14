@@ -1,15 +1,15 @@
+organization := "com.github.gregor-i"
 name := "sbt-embedded-postgres"
+version := "1.3.0"
 
-organization := "io.nhanzlikova.sbt"
-
-version := "git describe --tags --dirty --always".!!.stripPrefix("v").trim
+scalaVersion in ThisBuild := "2.12.6"
 
 sbtPlugin := true
 
 scalacOptions ++= List("-unchecked")
 
-publishMavenStyle := false
-bintrayRepository := "sbt-plugins"
+publishMavenStyle := true
+bintrayRepository := "maven"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
 libraryDependencies ++= {
