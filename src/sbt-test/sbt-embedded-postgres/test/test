@@ -1,0 +1,6 @@
+> startPostgres
+> checkConnection
+> stopPostgres
+> checkConnection
+> startPostgres
+> checkConnection
