@@ -12,10 +12,13 @@ class EmbeddedPostgresServer(
   pgVersion: Version.Main
 ) {
   val pg = new EmbeddedPostgres(pgVersion)
+  pg.getConfig
 
-  def start(): Unit =
+  def start(): Option[String] =
     if(!pg.getProcess.isPresent)
-      pg.start(host,port, dbName,username, password)
+      Some(pg.start(host,port, dbName,username, password))
+    else
+      Option(pg.getConnectionUrl.orElse(null))
 
   def stop(): Unit = pg.stop()
 
