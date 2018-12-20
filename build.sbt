@@ -1,6 +1,6 @@
 organization := "com.github.gregor-i"
 name := "sbt-embedded-postgres"
-version := "1.3.0-SNAPSHOT"
+version := "1.3.1"
 
 scalaVersion in ThisBuild := "2.12.7"
 
