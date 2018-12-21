@@ -8,7 +8,7 @@ Installation
 Add the following to your `project/plugins.sbt` file:
 ```
 resolvers += Resolver.bintrayRepo("gregor-i", "maven")
-addSbtPlugin("com.github.gregor-i" % "sbt-embedded-postgres" % "1.3.0")
+addSbtPlugin("com.github.gregor-i" % "sbt-embedded-postgres" % "2.0.0-RC1")
 ```
 
 Configuration
@@ -18,19 +18,30 @@ This will make sbt execute `startPostgres` before starting your process. For exa
 ```
 enablePlugins(EmbeddedPostgresPlugin)
 javaOptions += s"-DDATABASE_URL=${postgresConnectionString.value}"
-postgresSilencer := true
 ```
 
 Configuration options (in `build.sbt`) and their defaults
 ```
 postgresPort := 25432
-postgresDatabase := "database",
-postgresUsername := "admin"
-postgresPassword := "admin"
-postgresVersion := PRODUCTION // IVersion from ru.yandex.qatools.embed.postgresql.distribution.Version.Main
+postgresInitStatement := ""
 ```
 
-If you want to run your build on a CI server, it is advised to let sbt chose a port at random. For this use case is an utility function defined.    
-For example: `postgresPort := EmbeddedPostgresPlugin.getFreePort(25432 to 25532)`.  
+If you want to run your build on a CI server, it is advised to chose a port at random to enable concurrent builds. 
+This is done by setting `postgresPort := 0`. Access the chosen port by reading `postgresConnectionString`.      
 
-The output from the embedded postgres can be suppressed by setting `postgresSilencer := true`.
+
+Migration from 1.3.x to 2.0
+---------------------------
+
+Since 2.0 sbt-embedded-postgres no longer depends on 
+[yandex-qatools/postgresql-embedded](https://github.com/yandex-qatools/postgresql-embedded) 
+but instead uses
+[opentable/otj-pg-embedded](https://github.com/opentable/otj-pg-embedded). 
+This has a lot of benefits, ie. more stability, easier code, faster bootup time.
+But it also involves some changes to the API:
+* `postgresDatabase`, `postgresUsername` and `postgresPassword` are gone. 
+  Instead you can use the default credential `postgres:postgres` to the database `postgres`.
+  If you need to create your own user with its specific credentials you may use `postgresInitStatement`.
+  For an example look into the [test](src/sbt-test/sbt-embedded-postgres/test/build.sbt).
+* `postgresVersion` is gone. Currently there is no alternative.
+* `postgresSilencer` is gone.  

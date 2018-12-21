@@ -1,7 +1,8 @@
 package sbt.postgres
 
-import ru.yandex.qatools.embed.postgresql.distribution.Version
-import ru.yandex.qatools.embed.postgresql.distribution.Version.Main.PRODUCTION
+import java.util.concurrent.atomic.AtomicReference
+
+import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import sbt.Keys._
 import sbt._
 
@@ -9,71 +10,67 @@ object EmbeddedPostgresPlugin extends AutoPlugin {
 
   object autoImport {
     val postgresPort = settingKey[Int]("Postgres server port")
-    val postgresDatabase = settingKey[String]("Postgres database name")
-    val postgresUsername = settingKey[String]("Postgres username.")
-    val postgresPassword = settingKey[String]("Postgres password.")
-    val postgresVersion = settingKey[Version.Main]("Postgres version")
+    val postgresInitStatement = settingKey[String]("Postgres initiation sql statement. "+
+      "Usable to create users and databases.")
+
+    val postgresStatus = settingKey[AtomicReference[Status]]("Postgres status")
 
     val postgresConnectionString = taskKey[String]("Postgres connection string. This will also start the server.")
-    val startPostgres = taskKey[String]("start-postgres")
-    val stopPostgres = taskKey[Unit]("stop-postgres")
-    val postgresServer = settingKey[EmbeddedPostgresServer]("Postgres server")
-    val postgresIsRunning = taskKey[Boolean]("postgres-is-running")
+    val startPostgres = taskKey[Running]("start postgres")
+    val stopPostgres = taskKey[Closed.type]("stop postgres")
   }
 
   import autoImport._
 
-  def isReachable(host: String, port: Int, timeout: Int = 2000): Boolean = {
-    import java.io.IOException
-    import java.net.{InetSocketAddress, Socket}
-
-    val socket = new Socket
-    try {
-      socket.connect(new InetSocketAddress(host, port), timeout)
-      true
-    } catch {
-      case _: IOException => false
-    } finally {
-      socket.close()
-    }
-  }
-
-  def getFreePort(range: IndexedSeq[Int]): Int =
-    scala.util.Random.shuffle(range).find(x => !isReachable("localhost", x)).getOrElse {
-      throw new RuntimeException(s"No free port available in given port range.")
-    }
-
   def defaultSettings = Seq(
     postgresPort := 25432,
-    postgresDatabase := "database",
-    postgresConnectionString := startPostgres.value,
-    postgresUsername := "admin",
-    postgresPassword := "admin",
-    postgresVersion := PRODUCTION,
-    postgresServer := new EmbeddedPostgresServer(
-      "localhost",
-      postgresPort.value,
-      postgresDatabase.value,
-      postgresUsername.value,
-      postgresPassword.value,
-      postgresVersion.value
-    )
+    postgresInitStatement := "",
+    postgresStatus := new AtomicReference(NotStarted)
   )
 
   def tasks = Seq(
     startPostgres := {
-      streams.value.log.info(s"Starting Postgres ...")
-      val server = postgresServer.value
-      val connectionString = server.start().get
-      streams.value.log.info(s"Postgres started on $connectionString")
-      connectionString
+      postgresStatus.value.get() match {
+        case NotStarted | Closed =>
+          streams.value.log.info(s"Starting Postgres...")
+
+          val pg = EmbeddedPostgres.builder()
+            .setPort(postgresPort.value)
+            .start()
+
+          streams.value.log.info{
+            if(postgresInitStatement.value != "")
+              s"Initializing DB with: \n${postgresInitStatement.value}"
+            else
+              ""
+          }
+          if(postgresInitStatement.value != ""){
+            val con = pg.getPostgresDatabase.getConnection
+            con.createStatement().execute(postgresInitStatement.value)
+            con.close()
+          }
+
+          val connectionString = pg.getJdbcUrl("postgres", "postgres")
+          val running = Running(pg, connectionString)
+          postgresStatus.value.set(running)
+          streams.value.log.info(s"Postgres started on $connectionString")
+          running
+
+        case running: Running => running
+      }
     },
     stopPostgres := {
-      streams.value.log.info("Stopping Postgres...")
-      postgresServer.value.stop()
-      streams.value.log.info("Postgres stopped")
+      postgresStatus.value.get() match {
+        case Closed         => Closed
+        case NotStarted     => Closed
+        case Running(pg, _) =>
+          streams.value.log.info("Stopping Postgres...")
+          pg.close()
+          postgresStatus.value.set(Closed)
+          Closed
+      }
     },
-    postgresIsRunning := postgresServer.value.isRunning
+    postgresConnectionString := startPostgres.value.connectionString
   )
 
   override val projectSettings = defaultSettings ++ tasks

@@ -1,8 +1,8 @@
 organization := "com.github.gregor-i"
 name := "sbt-embedded-postgres"
-version := "1.3.1"
+version := "2.0.0-RC1"
 
-scalaVersion in ThisBuild := "2.12.7"
+scalaVersion in ThisBuild := "2.12.8"
 
 sbtPlugin := true
 
@@ -12,10 +12,12 @@ publishMavenStyle := true
 bintrayRepository := "maven"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
-libraryDependencies ++= {
-  Seq(
-    "ru.yandex.qatools.embed" % "postgresql-embedded" % "2.10",
-    "org.postgresql" % "postgresql" % "42.2.5"  % Test,
-    "org.scalatest" %% "scalatest" % "3.0.5" % Test
-  )
+libraryDependencies += "com.opentable.components" % "otj-pg-embedded" % "0.12.6"
+
+enablePlugins(SbtPlugin)
+
+scriptedLaunchOpts := { scriptedLaunchOpts.value ++
+  Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
 }
+
+scriptedBufferLog := false
