@@ -44,4 +44,11 @@ But it also involves some changes to the API:
   If you need to create your own user with its specific credentials you may use `postgresInitStatement`.
   For an example look into the [test](src/sbt-test/sbt-embedded-postgres/test/build.sbt).
 * `postgresVersion` is gone. Currently there is no alternative.
-* `postgresSilencer` is gone.  
+* `postgresSilencer` is gone.
+
+Known issues:
+-------------
+
+* `java.sql.SQLException: No suitable driver` may be thrown by applications directly started from sbt.
+ This is caused by a [bug in the jdk itself](https://bugs.openjdk.java.net/browse/JDK-8146872).
+ As stated in the ticket, a easy workaround is to load the postgres driver before connection via jdbc by calling `java.util.ServiceLoader.load(classOf[org.postgresql.Driver])`
