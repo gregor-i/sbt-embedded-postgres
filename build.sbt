@@ -1,18 +1,14 @@
 organization := "com.github.gregor-i"
 name := "sbt-embedded-postgres"
-version := "2.0.0-RC1"
+version := "2.0.0-RC2"
 
-scalaVersion in ThisBuild := "2.12.8"
+scalaVersion / ThisBuild := "2.12.13"
 
 sbtPlugin := true
 
 scalacOptions ++= List("-unchecked")
 
-publishMavenStyle := true
-bintrayRepository := "maven"
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-
-libraryDependencies += "com.opentable.components" % "otj-pg-embedded" % "0.12.6"
+libraryDependencies += "com.opentable.components" % "otj-pg-embedded" % "0.13.3"
 
 enablePlugins(SbtPlugin)
 
