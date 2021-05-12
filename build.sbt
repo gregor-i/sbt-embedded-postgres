@@ -1,12 +1,8 @@
 import scala.sys.process._
 
-organization := "com.github.gregor-i"
-name := "sbt-embedded-postgres"
-ThisBuild / version := {
-  Option("git tag -l --points-at HEAD".!!.trim)
-    .filter(_.nonEmpty)
-    .getOrElse("SNAPSHOT")
-}
+organization := scala.sys.env.get("GROUP").getOrElse("com.github.gregor-i")
+name := scala.sys.env.get("ARTIFACT").getOrElse("sbt-embedded-postgres")
+ThisBuild / version := scala.sys.env.get("VERSION").getOrElse("SNAPSHOT")
 
 ThisBuild / scalaVersion := "2.12.13"
 
