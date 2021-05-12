@@ -3,6 +3,14 @@ sbt-embedded-postgres
 
 Support for running PostgreSQL for use in integration tests.
 
+End of Service
+--------------
+
+This project is archived. 
+The JFrog Platform has sunset their free maven repository, so the released Jars are also lost.
+If you have need of this library, feel free to open an issue and we will find a solution.
+
+
 Installation
 ------------
 Add the following to your `project/plugins.sbt` file:
