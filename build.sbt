@@ -1,8 +1,14 @@
+import scala.sys.process._
+
 organization := "com.github.gregor-i"
 name := "sbt-embedded-postgres"
-version := "2.0.0-RC2"
+ThisBuild / version := {
+  Option("git tag -l --points-at HEAD".!!.trim)
+    .filter(_.nonEmpty)
+    .getOrElse("SNAPSHOT")
+}
 
-scalaVersion in ThisBuild := "2.12.13"
+ThisBuild / scalaVersion := "2.12.13"
 
 sbtPlugin := true
 
